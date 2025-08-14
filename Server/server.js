@@ -14,6 +14,53 @@ app.use(bodyParser.json());
 const cloudinary = require('./cloudinary');
 app.use(express.static('public'));
 
+const allowedOrigins = [
+  'http://localhost:5173',        // สำหรับ dev ที่รัน localhost
+  'https://task-tk.onrender.com' // สำหรับ prod ที่ deploy จริง
+];
+app.options('*', cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+const indexPath = path.join(distPath, 'index.html');
+const indexExists = fs.existsSync(indexPath);
+
+if (!indexExists) {
+  console.error('❌ ไม่พบ index.html ใน:', indexPath);
+} else {
+  console.log('✅ พบ index.html แล้วใน:', indexPath);
+}
+
+// ✅ เสิร์ฟไฟล์ static จาก employee-dist
+app.use(express.static(distPath));
+
+// ✅ ส่ง index.html เมื่อไม่เจอ route ที่ตรง
+app.get('*', (req, res) => {
+  res.sendFile(indexPath);
+});
 
 // สมัครสมาชิก
 app.post('/api/register', async (req, res) => {

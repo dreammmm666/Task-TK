@@ -13,6 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 const cloudinary = require('./cloudinary');
 app.use(express.static('public'));
+import path from "path";//
 
 const allowedOrigins = [
   'http://localhost:5173',        // สำหรับ dev ที่รัน localhost
@@ -45,22 +46,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-const indexPath = path.join(distPath, 'index.html');
-const indexExists = fs.existsSync(indexPath);
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, 'public')));
 
-if (!indexExists) {
-  console.error('❌ ไม่พบ index.html ใน:', indexPath);
-} else {
-  console.log('✅ พบ index.html แล้วใน:', indexPath);
-}
-
-// ✅ เสิร์ฟไฟล์ static จาก employee-dist
-app.use(express.static(distPath));
-
-// ✅ ส่ง index.html เมื่อไม่เจอ route ที่ตรง
+// Fallback: ส่ง index.html สำหรับทุก route ที่ไม่ใช่ API
 app.get('*', (req, res) => {
-  res.sendFile(indexPath);
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 
 // สมัครสมาชิก
 app.post('/api/register', async (req, res) => {

@@ -6,34 +6,19 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const db = require('./db');
-const app = express();
-const PORT = 3001;
-const pool = require('./db');
-app.use(cors());
-app.use(bodyParser.json());
 const cloudinary = require('./cloudinary');
-app.use(express.static('public'));
-import path from "path";//
 
-const allowedOrigins = [
-  'http://localhost:5173',        // สำหรับ dev ที่รัน localhost
-  'https://task-tk.onrender.com' // สำหรับ prod ที่ deploy จริง
-];
-app.options('*', cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const app = express();
+const PORT = process.env.PORT || 3001;
+const pool = require('./db');
+
+// Middleware
 app.use(cors({
   origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://task-tk.onrender.com'
+    ];
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -42,17 +27,19 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET','POST','PUT','DELETE','OPTIONS','HEAD'],
+  allowedHeaders: ['Content-Type','Authorization']
 }));
 
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public'))); // serve React build
 
-// Fallback: ส่ง index.html สำหรับทุก route ที่ไม่ใช่ API
+// Fallback สำหรับ SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
 
 
 // สมัครสมาชิก

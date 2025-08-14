@@ -12,6 +12,7 @@ const pool = require('./db');
 app.use(cors());
 app.use(bodyParser.json());
 const cloudinary = require('./cloudinary');
+app.use(express.static('public'));
 
 
 // สมัครสมาชิก

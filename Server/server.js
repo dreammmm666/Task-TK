@@ -1,25 +1,42 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const bcrypt = require('bcrypt');
-const db = require('./db');
-const cloudinary = require('./cloudinary');
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import bcrypt from 'bcrypt';
+import db from './db.js';         // ต้องมี .js ต่อท้ายถ้าเป็น ESM
+import cloudinary from './cloudinary.js';
+
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const pool = require('./db');
 
 // Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
+// Serve React build
+const buildPath = path.join(__dirname, '../takiang2.0/dist'); // เปลี่ยน path ตามที่คุณ build
+app.use(express.static(buildPath));
+
+// Fallback สำหรับ React routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+// Middleware
+const allowedOrigins = [
+  'http://localhost:5173',        // dev
+  'http://localhost:3001',        // server เอง (ถ้าต้องเรียก static)
+  'https://task-tk.onrender.com'  // production
+];
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'https://task-tk.onrender.com'
-    ];
-    if (!origin) return callback(null, true);
+    if (!origin) return callback(null, true); // บางคำขอไม่มี origin (เช่นจาก curl, Postman)
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -31,13 +48,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public'))); // serve React build
 
-// Fallback สำหรับ SPA
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 
 

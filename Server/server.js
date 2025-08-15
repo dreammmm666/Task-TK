@@ -20,12 +20,18 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Serve React build
-const buildPath = path.join(__dirname, '../takiang2.0/dist'); // เปลี่ยน path ตามที่คุณ build
-app.use(express.static(buildPath));
+//const buildPath = path.join(__dirname, '../takiang2.0/dist'); // เปลี่ยน path ตามที่คุณ build
+//app.use(express.static(buildPath));
 
 // Fallback สำหรับ React routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
+//app.get('*', (req, res) => {
+///  res.sendFile(path.join(buildPath, 'index.html'));
+//});
+
+app.use(express.static(path.join(__dirname, "Takiang2.0", "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "Takiang2.0", "dist", "index.html"));
 });
 
 // Middleware
